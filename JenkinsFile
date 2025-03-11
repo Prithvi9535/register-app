@@ -1,33 +1,32 @@
 pipeline {
-    agent {
-        label 'Jenkins-Agent' // Fixed typo: changed 'lable' to 'label'
-    }
-
+    agent { label 'Jenkins-Agent' }
     tools {
-        jdk 'Adoptium JDK 17' // Use the correct JDK tool name as configured in Jenkins
+        jdk 'Java17'
+        maven 'Maven3'
     }
+    stages{
+        stage("Cleanup Workspace"){
+                steps {
+                cleanWs()
+                }
+        }
 
-    stages {
-        stage('Cleanup Workspace') {
+        stage("Checkout from SCM"){
+                steps {
+                    git branch: 'main', credentialsId: 'github', url: 'https://github.com/Prithvi9535/register-app'
+                }
+        }
+
+        stage("Build Application"){
             steps {
-                // Add commands for cleaning up the workspace
-                deleteDir() // This is just an example; add your specific cleanup commands
+                sh "mvn clean package"
             }
-        }
 
-        stage('Checkout From SCM') {
-            steps {
-                checkout scm // Checks out the code from your Git repository
-            }
-        }
+       }
 
-        // Add other stages here
-    }
-
-    post {
-        always {
-            // Commands that should always run after the pipeline, like cleanup or notifications
-            echo 'Cleaning up after the build...'
-        }
-    }
+       stage("Test Application"){
+           steps {
+                 sh "mvn test"
+           }
+       }
 }
